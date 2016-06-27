@@ -30,7 +30,7 @@ extern int Net_Init();
 extern Net_Sock Net_NewSock(int type);
 
 /* bind and start listening on a socket */
-extern int Net_StartServer(Net_Sock sock, Net_Port port);
+extern int Net_StartServer(Net_Sock sock, Net_Port port, int type);
 
 /* accept incoming connections on a server socket */
 extern Net_Sock Net_Accept(Net_Sock sock);
@@ -38,15 +38,19 @@ extern Net_Sock Net_Accept(Net_Sock sock);
 /* connect to another host */
 extern int Net_Connect(Net_Sock sock, Net_Addr addr, Net_Port port);
 
+/* bind the socket to an address */
+extern int Net_Bind(Net_Sock sock, Net_Addr addr, Net_Port port);
+
 /* see if there's any new data on the socket */
 extern int Net_Poll(Net_Sock sock);
 
-/* send data on across a socket */
+/* send data across a socket */
 extern int Net_Send(Net_Sock sock, const void *data, int len);
 extern int Net_SendTo(Net_Sock sock, const void *data, int len, Net_Addr dest, Net_Port port);
 
 /* receive data from a socket */
 extern int Net_Recv(Net_Sock sock, void *data, int len);
+extern int Net_RecvFrom(Net_Sock sock, void *data, int len, Net_Addr *src, Net_Port *port);
 
 /* close a connection */
 /* on failure do not retry */
