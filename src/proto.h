@@ -7,6 +7,10 @@
 #define PROTO_DEFAULT_K 20
 #define PROTO_DEFAULT_ID_SIZE 256
 
+#define PROTO_RPC 0
+#define PROTO_RPC_PING 0
+#define PROTO_RPC_FINDNODE 1
+
 typedef uint8_t* Proto_PeerID;
 
 typedef struct
@@ -39,8 +43,15 @@ extern Proto_Table *Proto_NewTable(int k, int idsize);
 extern void Proto_FreeTable(Proto_Table *table);
 
 extern int Proto_AddContactToBucket(Proto_Contact *add, Proto_Bucket *to);
-extern int Proto_RemoveContactFromBucket(Proto_Bucket *from, unsigned int index);
+extern int Proto_RemoveContactFromBucket(Proto_Contact *rm, Proto_Bucket *from);
+extern int Proto_BumpContactInBucket(Proto_Contact *bump, Proto_Bucket *in);
 
 extern int Proto_AddContactToTable(Proto_Contact *add, Proto_Table *to);
+
+extern Proto_Contact *Proto_LookupPeer(Proto_PeerID *id);
+extern int Proto_SendMessage(Proto_Contact *to, uint8_t *data);
+
+extern int Proto_RPC_Ping(Proto_Contact *to);
+extern Proto_Contact *Proto_RPC_FindPeer(Proto_Contact *to);
 
 #endif

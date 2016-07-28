@@ -88,10 +88,21 @@ int Proto_AddContactToBucket(Proto_Contact *add, Proto_Bucket *to)
     return -1;
 }
 
-int Proto_RemoveContactFromBucket(Proto_Bucket *from, unsigned int index)
+int Proto_RemoveContactFromBucket(Proto_Contact *rm, Proto_Bucket *from)
 {
-    if(from == NULL || from->list[index] == NULL)
+    int index;
+
+    if(from == NULL || rm == NULL)
         return -1;
+
+    for(index = 0; index <= from->k; index++)
+    {
+        if(index == from->k)
+            return -1;
+
+        if(from->list[index] == rm)
+            break;
+    }
 
     memmove(&from->list[index], &from->list[index + 1],
         (from->k - index - 1) * sizeof(Proto_Contact*));
@@ -99,6 +110,20 @@ int Proto_RemoveContactFromBucket(Proto_Bucket *from, unsigned int index)
     from->list[from->k - 1] = NULL;
 
     return 0;
+}
+
+int Proto_BumpContactInBucket(Proto_Contact *bump, Proto_Bucket *in)
+{
+    int index;
+
+    for(index = 0; index <= in->k; index++)
+    {
+        if(index == in->k)
+            return -1;
+
+        if(in->list[index] == bump)
+            break;
+    }
 }
 
 int Proto_AddContactToTable(Proto_Contact *add, Proto_Table *to)
@@ -120,4 +145,20 @@ int Proto_AddContactToTable(Proto_Contact *add, Proto_Table *to)
     }
 
     return -1;
+}
+
+Proto_Contact *Proto_LookupPeer(Proto_PeerID *id)
+{
+}
+
+int Proto_SendMessage(Proto_Contact *to, uint8_t *data)
+{
+}
+
+int Proto_RPC_Ping(Proto_Contact *to)
+{
+}
+
+Proto_Contact *Proto_RPC_FindNode(Proto_Contact *to)
+{
 }
