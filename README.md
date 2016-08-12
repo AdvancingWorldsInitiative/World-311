@@ -1,4 +1,4 @@
-# World-311
+# World 311
 A peer to peer virtual world
 
 ## Goal
