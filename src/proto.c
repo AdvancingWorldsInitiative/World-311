@@ -2,6 +2,27 @@
 #include <stdlib.h>
 #include <string.h>
 
+Proto_PeerID Proto_NewPeerID()
+{
+    return (Proto_PeerID)malloc(sizeof(uint8_t) * PROTO_PEERID_SIZE);
+}
+
+void Proto_FreePeerID(Proto_PeerID *id)
+{
+    free(*id);
+}
+
+Proto_PeerID Proto_XorPeerID(Proto_PeerID first, Proto_PeerID second)
+{
+    int i;
+    Proto_PeerID out = Proto_NewPeerID();
+
+    for(i = 0; i < PROTO_PEERID_SIZE; i++)
+        out[i] = first[i] ^ second[i];
+
+    return out;
+}
+
 Proto_Contact *Proto_NewContact()
 {
     return (Proto_Contact*)malloc(sizeof(Proto_Contact));
@@ -126,6 +147,10 @@ int Proto_BumpContactInBucket(Proto_Contact *bump, Proto_Bucket *in)
     }
 }
 
+Proto_Contact *Proto_GetClosestInBucket(Proto_PeerID *id, Proto_Bucket *in)
+{
+}
+
 int Proto_AddContactToTable(Proto_Contact *add, Proto_Table *to)
 {
     int i;
@@ -147,11 +172,15 @@ int Proto_AddContactToTable(Proto_Contact *add, Proto_Table *to)
     return -1;
 }
 
+Proto_Contact *Proto_GetClosestInTable(Proto_PeerID *id, Proto_Table *in)
+{
+}
+
 Proto_Contact *Proto_LookupPeer(Proto_PeerID *id)
 {
 }
 
-int Proto_SendMessage(Proto_Contact *to, uint8_t *data)
+int Proto_SendMessage(Proto_Contact *to, uint8_t *data, long len)
 {
 }
 

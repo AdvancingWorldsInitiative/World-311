@@ -4,25 +4,19 @@
 #include <stdint.h>
 #include "network.h"
 
-#define SEC_HASH_SIZE
+#define SEC_HASH_SIZE 32
 typedef uint8_t* Sec_Hash;
 
+#define SEC_SYMKEY_SIZE 32
 typedef uint8_t* Sec_SymKey;
+
+#define SEC_PUBKEY_SIZE 32
 typedef uint8_t* Sec_PubKey;
+
+#define SEC_PRIVKEY_SIZE 32
 typedef uint8_t* Sec_PrivKey;
 
-typedef struct
-{
-    Net_Sock *sock;
-    Sec_SymKey *key;
-} Sec_Stream;
-
-int Sec_SendWithSym(Net_Sock *sock, Net_Addr *addr, Net_Port port, Sec_SymKey *key, void *data, long len);
-
-int Sec_SendWithPub(Net_Sock *sock, Net_Addr *addr, Net_Port port, Sec_PubKey *key, void *data, long len);
-
-int Sec_RecvWithSym(Net_Sock *sock, void *data, long len);
-
-int Sec_InitStream(Net_Sock *sock, Net_Addr *addr, Net_Port port, Sec_PubKey *key);
+int Sec_EncryptWithPub(Sec_PubKey *key, void *data, int len, void *out);
+int Sec_DecryptWithPriv(Sec_PrivKey *key, void *data, int len, void *out);
 
 #endif

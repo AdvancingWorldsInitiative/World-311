@@ -26,18 +26,18 @@ void Error_Print(const char *fmt, ...)
 
     switch(Error_options)
     {
-      case ERROR_OPT_STDOUT:
-        vprintf(fmt, ap);
-        break;
+        case ERROR_OPT_STDOUT:
+          vprintf(fmt, ap);
+          break;
 
-      case ERROR_OPT_STDERR:
-        vfprintf(stderr, fmt, ap);
-        break;
-      case ERROR_OPT_FILE:
-        file = fopen(ERROR_FILENAME, "a");
-        vfprintf(file, fmt, ap);
-        fclose(file);
-        break;
+        case ERROR_OPT_STDERR:
+          vfprintf(stderr, fmt, ap);
+          break;
+        case ERROR_OPT_FILE:
+          file = fopen(ERROR_FILENAME, "a");
+          vfprintf(file, fmt, ap);
+          fclose(file);
+          break;
     }
 
     va_end(ap);
