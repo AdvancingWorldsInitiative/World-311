@@ -6,3 +6,4 @@
 | error.h error.c | For handling error messages. |
 | proto.h proto.c | Stuff for handling the protocol such as DHT stuff. |
 | handler.h handler.c | Handles incoming connections. |
+| secure.h secure.c | For making and receiving secure connections. |
