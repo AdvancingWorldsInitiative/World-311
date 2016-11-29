@@ -9,18 +9,22 @@ We're currenly planning to use Kademlia for peer finding and integrate some form
 The name World 311 arises from an extremely lengthy, complex, and interesting backstory we haven't bothered to write down yet (or come up with).
 
 ## Things to be done
-(categorised by stack layer.
-### Connection
-Sockets - Done for TCP/IP
-Secure connections - Almost done
-Multiplexing
-### Protocol
-DHT (Kademlia)
-Object request
-Scripts (physics, interactivity)
-### World
-Object formats
-Stream formats
-### Interface
-Interface scripting (Lua frontend)
-GUI
+(categorised by stack layer)
+
+Connection
+- Sockets - Done for TCP/IP
+- Secure connections - Almost done
+- Multiplexing
+
+Protocol
+- DHT (Kademlia)
+- Object request
+- Scripts (physics, interactivity)
+
+World
+- Object formats
+- Stream formats
+
+Interface
+- Interface scripting (Lua frontend)
+- GUI
