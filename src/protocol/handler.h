@@ -2,7 +2,7 @@
 #define _HANDLER_H
 
 #include <pthread.h>
-#include "network.h"
+#include "../connection/network.h"
 
 /* lets you communicate with a running handler */
 typedef struct

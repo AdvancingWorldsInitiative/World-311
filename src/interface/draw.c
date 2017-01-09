@@ -1,5 +1,5 @@
 #include "draw.h"
-#include "error.h"
+#include "../utilities/error.h"
 
 int Draw_Init(int width, int height, int fullscreen)
 {

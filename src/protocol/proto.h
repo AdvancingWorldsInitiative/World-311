@@ -2,8 +2,8 @@
 #define _PROTO_H
 
 #include <stdint.h>
-#include "network.h"
-#include "secure.h"
+#include "../connection/network.h"
+#include "../connection/secure.h"
 
 #define PROTO_DEFAULT_K 20
 #define PROTO_DEFAULT_ID_SIZE 256

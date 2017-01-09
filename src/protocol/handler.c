@@ -1,6 +1,6 @@
 #include "handler.h"
 #include <stdlib.h>
-#include "network.h"
+#include "../connection/network.h"
 
 /* holds the current state of the packet handler */
 typedef struct
