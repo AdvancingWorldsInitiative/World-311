@@ -1,9 +1,9 @@
 #include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "draw.h"
-#include "vfile.h"
-#include "error.h"
+#include "../interface/draw.h"
+#include "../utilities/vfile.h"
+#include "../utilities/error.h"
 
 GLuint LoadTexture(const char *path);
 
