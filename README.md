@@ -19,6 +19,7 @@ Connection
 Protocol
 - DHT (Kademlia)
 - Object request
+- Practical Byzantine Fault Tolerance
 - Scripts (physics, interactivity)
 
 World
