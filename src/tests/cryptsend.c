@@ -6,17 +6,17 @@ int main(int argc, char *argv[])
 {
     const char *message = "The test passed.";
     int i;
-    Sec_PubKey pub;
-    Sec_PrivKey priv;
-    Sec_PubKey peerpub;
-    Sec_PubKey peerpriv;
-    Sec_Session *session;
-    Sec_Session *peerses;
+    Secure_PubKey pub;
+    Secure_PrivKey priv;
+    Secure_PubKey peerpub;
+    Secure_PubKey peerpriv;
+    Secure_Session *session;
+    Secure_Session *peerses;
     Net_Sock listen;
     uint8_t *plain;
 
-    Sec_GenKeys(&pub, &priv);
-    Sec_GenKeys(&peerpub, &peerpriv);
+    Secure_GenKeys(&pub, &priv);
+    Secure_GenKeys(&peerpub, &peerpriv);
 
     Error_Print("Pubkey:  ");
     for(i = 0; i < SEC_PUBKEY_SIZE; i++)
@@ -30,22 +30,22 @@ int main(int argc, char *argv[])
     listen = Net_NewSock(NET_TCP);
     Net_StartServer(listen, 5558, NET_TCP);
 
-    session = Sec_Connect(peerpub, pub, priv, in6addr_loopback, 5558);
+    session = Secure_Connect(peerpub, pub, priv, in6addr_loopback, 5558);
 
     if(session == NULL)
         return -1;
 
-    peerses = Sec_Accept(listen, peerpub, peerpriv);
+    peerses = Secure_Accept(listen, peerpub, peerpriv);
 
     if(peerses == NULL)
         return -1;
 
-    Sec_Send(session, message, strlen(message) + 1);
-    Sec_Recv(peerses, &plain);
+    Secure_Send(session, message, strlen(message) + 1);
+    Secure_Recv(peerses, &plain);
     Error_Print("Message: %s\n", plain);
 
-    Sec_Close(session);
-    Sec_Close(peerses);
+    Secure_Close(session);
+    Secure_Close(peerses);
 
     return 0;
 }

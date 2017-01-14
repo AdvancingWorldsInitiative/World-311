@@ -13,7 +13,7 @@
 #define PROTO_RPC_FINDNODE 1
 
 #define PROTO_PEERID_SIZE SEC_PUBKEY_SIZE
-typedef Sec_PubKey Proto_PeerID;
+typedef Secure_PubKey Proto_PeerID;
 
 typedef struct
 {

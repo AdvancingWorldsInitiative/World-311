@@ -1,6 +1,6 @@
 #include "secure.h"
 
-int Sec_GenKeys(Sec_PubKey *pub, Sec_PrivKey *priv)
+int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv)
 {
     *pub = (uint8_t*)malloc(SEC_PUBKEY_SIZE);
     *priv = (uint8_t*)malloc(SEC_PRIVKEY_SIZE);
@@ -8,26 +8,26 @@ int Sec_GenKeys(Sec_PubKey *pub, Sec_PrivKey *priv)
     return crypto_box_keypair(*pub, *priv);
 }
 
-void Sec_FreePubKey(Sec_PubKey pub)
+void Secure_FreePubKey(Secure_PubKey pub)
 {
     free(pub);
 }
 
-void Sec_FreePrivKey(Sec_PrivKey priv)
+void Secure_FreePrivKey(Secure_PrivKey priv)
 {
     free(priv);
 }
 
-void Sec_FreeKeyPair(Sec_PubKey pub, Sec_PrivKey priv)
+void Secure_FreeKeyPair(Secure_PubKey pub, Secure_PrivKey priv)
 {
-    Sec_FreePubKey(pub);
-    Sec_FreePrivKey(priv);
+    Secure_FreePubKey(pub);
+    Secure_FreePrivKey(priv);
 }
 
-Sec_Session *Sec_Connect(Sec_PubKey peer, Sec_PubKey pub, Sec_PrivKey priv,
+Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_PrivKey priv,
     Net_Addr addr, Net_Port port)
 {
-    Sec_Session *out = (Sec_Session*)malloc(sizeof(Sec_Session));
+    Secure_Session *out = (Secure_Session*)malloc(sizeof(Secure_Session));
 
     if(out == NULL)
     {
@@ -71,18 +71,18 @@ Sec_Session *Sec_Connect(Sec_PubKey peer, Sec_PubKey pub, Sec_PrivKey priv,
 
     if(Net_Send(out->sock, pub, SEC_PUBKEY_SIZE) != SEC_PUBKEY_SIZE)
     {
-        Sec_Close(out);
+        Secure_Close(out);
         return NULL;
     }
 
     return out;
 }
 
-Sec_Session *Sec_Accept(Net_Sock sock, Sec_PubKey pub, Sec_PrivKey priv)
+Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey priv)
 {
-    Sec_Session *out = (Sec_Session*)malloc(sizeof(Sec_Session));
+    Secure_Session *out = (Secure_Session*)malloc(sizeof(Secure_Session));
 
-    Sec_PubKey peer = (Sec_PubKey)malloc(SEC_PUBKEY_SIZE);
+    Secure_PubKey peer = (Secure_PubKey)malloc(SEC_PUBKEY_SIZE);
 
     out->sock = Net_Accept(sock);
 
@@ -95,7 +95,7 @@ Sec_Session *Sec_Accept(Net_Sock sock, Sec_PubKey pub, Sec_PrivKey priv)
 
     if(Net_Recv(out->sock, peer, SEC_PUBKEY_SIZE) != SEC_PUBKEY_SIZE)
     {
-        Sec_Close(out);
+        Secure_Close(out);
         Error_Print("Received key is the wrong size.\n");
         return NULL;
     }
@@ -104,7 +104,7 @@ Sec_Session *Sec_Accept(Net_Sock sock, Sec_PubKey pub, Sec_PrivKey priv)
 
     if(crypto_box_beforenm(out->key, peer, priv))
     {
-        Sec_Close(out);
+        Secure_Close(out);
         Error_Print("Unable to create shared session key.\n");
         return NULL;
     }
@@ -112,13 +112,13 @@ Sec_Session *Sec_Accept(Net_Sock sock, Sec_PubKey pub, Sec_PrivKey priv)
     return out;
 }
 
-int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
+int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
 {
     int sent;
 
-    Sec_Size size;
+    Secure_Size size;
     uint8_t *cyphertext = (uint8_t*)malloc(len + crypto_box_MACBYTES);
-    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Sec_Size) + crypto_box_MACBYTES);
+    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_Size) + crypto_box_MACBYTES);
     uint8_t *nonce = (uint8_t*)malloc(crypto_box_NONCEBYTES);
 
     randombytes_buf(nonce, crypto_box_NONCEBYTES);
@@ -133,7 +133,7 @@ int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
 
     size.value = htonl(len);
 
-    if(crypto_box_easy_afternm(cyphersize, size.bytes, sizeof(Sec_Size),
+    if(crypto_box_easy_afternm(cyphersize, size.bytes, sizeof(Secure_Size),
         nonce, session->key))
     {
         free(cyphertext);
@@ -165,8 +165,8 @@ int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
         return -1;
     }
 
-    if(Net_Send(session->sock, cyphersize, sizeof(Sec_Size) + crypto_box_MACBYTES)
-        != sizeof(Sec_Size) + crypto_box_MACBYTES)
+    if(Net_Send(session->sock, cyphersize, sizeof(Secure_Size) + crypto_box_MACBYTES)
+        != sizeof(Secure_Size) + crypto_box_MACBYTES)
     {
         free(cyphertext);
         free(cyphersize);
@@ -183,13 +183,13 @@ int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
     return sent;
 }
 
-size_t Sec_Recv(Sec_Session *session, uint8_t **data)
+size_t Secure_Recv(Secure_Session *session, uint8_t **data)
 {
     size_t out;
 
-    Sec_Size size;
+    Secure_Size size;
     uint8_t *cyphertext;
-    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Sec_Size) + crypto_box_MACBYTES);
+    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_Size) + crypto_box_MACBYTES);
     uint8_t *nonce = (uint8_t*)malloc(crypto_box_NONCEBYTES);
 
     if(Net_Recv(session->sock, nonce, crypto_box_NONCEBYTES)
@@ -200,8 +200,8 @@ size_t Sec_Recv(Sec_Session *session, uint8_t **data)
         return -1;
     }
 
-    if(Net_Recv(session->sock, cyphersize, sizeof(Sec_Size) + crypto_box_MACBYTES)
-        != sizeof(Sec_Size) + crypto_box_MACBYTES)
+    if(Net_Recv(session->sock, cyphersize, sizeof(Secure_Size) + crypto_box_MACBYTES)
+        != sizeof(Secure_Size) + crypto_box_MACBYTES)
     {
         free(cyphersize);
         free(nonce);
@@ -209,7 +209,7 @@ size_t Sec_Recv(Sec_Session *session, uint8_t **data)
     }
 
     if(crypto_box_open_easy_afternm(size.bytes, cyphersize,
-        sizeof(Sec_Size) + crypto_box_MACBYTES, nonce, session->key))
+        sizeof(Secure_Size) + crypto_box_MACBYTES, nonce, session->key))
     {
         free(cyphersize);
         free(nonce);
@@ -264,7 +264,7 @@ size_t Sec_Recv(Sec_Session *session, uint8_t **data)
     return out;
 }
 
-void Sec_Close(Sec_Session *session)
+void Secure_Close(Secure_Session *session)
 {
     Net_Close(session->sock);
 
