@@ -2,6 +2,7 @@
 #define _SECURE_H
 
 #include "secure_types.h"
+#include "secure_connect.h"
 
 #include <sodium.h>
 #include <stdint.h>
@@ -9,8 +10,8 @@
 
 extern int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv);
 
-extern Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_PrivKey priv,
-    Net_Addr addr, Net_Port port);
+extern Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub,
+    Secure_PrivKey priv, Net_Addr addr, Net_Port port);
 
 extern Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey priv);
 
