@@ -133,7 +133,7 @@ int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
 
     size.value = htonl(len);
 
-    if(crypto_box_afternm(cyphersize, size.bytes, sizeof(Sec_Size),
+    if(crypto_box_easy_afternm(cyphersize, size.bytes, sizeof(Sec_Size),
         nonce, session->key))
     {
         free(cyphertext);
@@ -145,7 +145,7 @@ int Sec_Send(Sec_Session *session, const uint8_t *data, size_t len)
 
     nonce[0] ^= 1;
 
-    if(crypto_box_afternm(cyphertext, data, len, nonce, session->key))
+    if(crypto_box_easy_afternm(cyphertext, data, len, nonce, session->key))
     {
         free(cyphertext);
         free(cyphersize);
@@ -208,7 +208,7 @@ size_t Sec_Recv(Sec_Session *session, uint8_t **data)
         return -1;
     }
 
-    if(crypto_box_open_afternm(size.bytes, cyphersize,
+    if(crypto_box_open_easy_afternm(size.bytes, cyphersize,
         sizeof(Sec_Size) + crypto_box_MACBYTES, nonce, session->key))
     {
         free(cyphersize);
@@ -248,7 +248,7 @@ size_t Sec_Recv(Sec_Session *session, uint8_t **data)
         return -1;
     }
 
-    if(crypto_box_open_afternm(*data, cyphertext,
+    if(crypto_box_open_easy_afternm(*data, cyphertext,
         out + crypto_box_MACBYTES, nonce, session->key))
     {
         free(cyphertext);

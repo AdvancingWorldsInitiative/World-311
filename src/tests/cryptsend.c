@@ -1,7 +1,10 @@
+#include <string.h>
 #include "../connection/secure.h"
+#include "../connection/network.h"
 
 int main(int argc, char *argv[])
 {
+    const char *message = "The test passed.";
     int i;
     Sec_PubKey pub;
     Sec_PrivKey priv;
@@ -37,7 +40,7 @@ int main(int argc, char *argv[])
     if(peerses == NULL)
         return -1;
 
-    Sec_Send(session, "secret", 7);
+    Sec_Send(session, message, strlen(message) + 1);
     Sec_Recv(peerses, &plain);
     Error_Print("Message: %s\n", plain);
 
