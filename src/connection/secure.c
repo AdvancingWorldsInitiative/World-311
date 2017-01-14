@@ -8,22 +8,6 @@ int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv)
     return crypto_box_keypair(*pub, *priv);
 }
 
-void Secure_FreePubKey(Secure_PubKey pub)
-{
-    free(pub);
-}
-
-void Secure_FreePrivKey(Secure_PrivKey priv)
-{
-    free(priv);
-}
-
-void Secure_FreeKeyPair(Secure_PubKey pub, Secure_PrivKey priv)
-{
-    Secure_FreePubKey(pub);
-    Secure_FreePrivKey(priv);
-}
-
 Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_PrivKey priv,
     Net_Addr addr, Net_Port port)
 {
