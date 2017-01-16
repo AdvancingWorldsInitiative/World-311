@@ -17,6 +17,12 @@ typedef uint8_t* Secure_PubKey;
 #define SECURE_PRIVKEY_SIZE crypto_box_SECRETKEYBYTES
 typedef uint8_t* Secure_PrivKey;
 
+#define SECURE_SHAREDKEY_SIZE crypto_box_BEFORENMBYTES
+typedef uint8_t* Secure_SharedKey;
+
+#define SECURE_NONCE_SIZE crypto_box_NONCEBYTES
+typedef uint8_t* Secure_Nonce;
+
 #define SECURE_MAX_MSGSIZE 1048576 /* 1 Meg */
 typedef union
 {
@@ -28,11 +34,24 @@ typedef struct
 {
     Net_Sock sock;
     uint8_t* key;
-    uint8_t* nonce;
+    Secure_Nonce nonce;
 } Secure_Session;
 
+extern int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv);
+extern int Secure_GenSharedKey(Secure_SharedKey sharedkey, Secure_PubKey peer,
+    Secure_PrivKey priv);
+extern int Secure_GenNonce(Secure_Nonce nonce);
+
+extern Secure_Session *Secure_NewSession();
+extern Secure_PubKey Secure_NewPubKey();
+extern Secure_PrivKey Secure_NewPrivKey();
+extern Secure_SharedKey Secure_NewSharedKey();
+extern Secure_Nonce Secure_NewNonce();
+
+extern void Secure_FreeSession(Secure_Session *session);
 extern void Secure_FreePubKey(Secure_PubKey pub);
 extern void Secure_FreePrivKey(Secure_PrivKey priv);
 extern void Secure_FreeKeyPair(Secure_PubKey pub, Secure_PrivKey priv);
+extern void Secure_FreeNonce(Secure_Nonce nonce);
 
 #endif

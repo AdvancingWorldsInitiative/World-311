@@ -1,17 +1,9 @@
 #include "secure.h"
 
-int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv)
-{
-    *pub = (uint8_t*)malloc(SECURE_PUBKEY_SIZE);
-    *priv = (uint8_t*)malloc(SECURE_PRIVKEY_SIZE);
-
-    return crypto_box_keypair(*pub, *priv);
-}
-
 Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_PrivKey priv,
     Net_Addr addr, Net_Port port)
 {
-    Secure_Session *out = (Secure_Session*)malloc(sizeof(Secure_Session));
+    Secure_Session *out = Secure_NewSession();
 
     if(out == NULL)
     {
@@ -19,41 +11,21 @@ Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_Pri
         return out;
     }
 
-    out->sock = Net_NewSock(NET_TCP);
-
-    if(out->sock == -1)
-    {
-        Error_Print("Unable to open session socket.\n");
-        free(out);
-        return NULL;
-    }
-
-    if(Net_Connect(out->sock, addr, port))
+    if(Secure_ConnectSocket(out, addr, port))
     {
         free(out);
         return NULL;
     }
 
-    out->key = (uint8_t*)malloc(crypto_box_BEFORENMBYTES);
+    out->key = Secure_NewSharedKey();
 
-    if(out->key == NULL)
+    if(Secure_GenSharedKey(out->key, peer, priv))
     {
-        Net_Close(out->sock);
-        free(out);
-        Error_Print("Unable to allocate shared session key.\n");
+        Secure_Close(out);
         return NULL;
     }
 
-    if(crypto_box_beforenm(out->key, peer, priv))
-    {
-        Net_Close(out->sock);
-        sodium_free(out->key);
-        free(out);
-        Error_Print("Unable to create shared session key.\n");
-        return NULL;
-    }
-
-    if(Net_Send(out->sock, pub, SECURE_PUBKEY_SIZE) != SECURE_PUBKEY_SIZE)
+    if(Secure_SendPublicKey(out, pub))
     {
         Secure_Close(out);
         return NULL;
@@ -64,18 +36,11 @@ Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_Pri
 
 Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey priv)
 {
-    Secure_Session *out = (Secure_Session*)malloc(sizeof(Secure_Session));
+    Secure_Session *out = Secure_NewSession();
 
-    Secure_PubKey peer = (Secure_PubKey)malloc(SECURE_PUBKEY_SIZE);
+    Secure_PubKey peer = Secure_NewPubKey();
 
     out->sock = Net_Accept(sock);
-
-    if(sock == -1)
-    {
-        free(out);
-        Error_Print("Unable to accept connection.\n");
-        return NULL;
-    }
 
     if(Net_Recv(out->sock, peer, SECURE_PUBKEY_SIZE) != SECURE_PUBKEY_SIZE)
     {
@@ -84,12 +49,11 @@ Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey p
         return NULL;
     }
 
-    out->key = (uint8_t*)malloc(crypto_box_BEFORENMBYTES);
+    out->key = Secure_NewSharedKey();
 
-    if(crypto_box_beforenm(out->key, peer, priv))
+    if(Secure_GenSharedKey(out->key, peer, priv))
     {
         Secure_Close(out);
-        Error_Print("Unable to create shared session key.\n");
         return NULL;
     }
 
@@ -103,9 +67,9 @@ int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
     Secure_MsgSize size;
     uint8_t *cyphertext = (uint8_t*)malloc(len + crypto_box_MACBYTES);
     uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_MsgSize) + crypto_box_MACBYTES);
-    uint8_t *nonce = (uint8_t*)malloc(crypto_box_NONCEBYTES);
+    Secure_Nonce nonce = Secure_NewNonce();
 
-    randombytes_buf(nonce, crypto_box_NONCEBYTES);
+    Secure_GenNonce(nonce);
 
     if(len > SECURE_MAX_MSGSIZE)
     {
@@ -145,7 +109,7 @@ int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
     {
         free(cyphertext);
         free(cyphersize);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -154,7 +118,7 @@ int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
     {
         free(cyphertext);
         free(cyphersize);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -162,7 +126,7 @@ int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
 
     free(cyphertext);
     free(cyphersize);
-    free(nonce);
+    Secure_FreeNonce(nonce);
 
     return sent;
 }
@@ -174,13 +138,13 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
     Secure_MsgSize size;
     uint8_t *cyphertext;
     uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_MsgSize) + crypto_box_MACBYTES);
-    uint8_t *nonce = (uint8_t*)malloc(crypto_box_NONCEBYTES);
+    Secure_Nonce nonce = Secure_NewNonce();
 
     if(Net_Recv(session->sock, nonce, crypto_box_NONCEBYTES)
         != crypto_box_NONCEBYTES)
     {
         free(cyphersize);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -188,7 +152,7 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
         != sizeof(Secure_MsgSize) + crypto_box_MACBYTES)
     {
         free(cyphersize);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -196,7 +160,7 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
         sizeof(Secure_MsgSize) + crypto_box_MACBYTES, nonce, session->key))
     {
         free(cyphersize);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -206,7 +170,7 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
 
     if(out > SECURE_MAX_MSGSIZE)
     {
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -216,7 +180,7 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
         != out + crypto_box_MACBYTES)
     {
         free(cyphertext);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         return -1;
     }
 
@@ -227,7 +191,7 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
     if(*data == NULL)
     {
         free(cyphertext);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         Error_Print("Unable to allocate incoming message buffer.\n");
         return -1;
     }
@@ -236,14 +200,14 @@ size_t Secure_Recv(Secure_Session *session, uint8_t **data)
         out + crypto_box_MACBYTES, nonce, session->key))
     {
         free(cyphertext);
-        free(nonce);
+        Secure_FreeNonce(nonce);
         free(*data);
         *data = NULL;
         return -1;
     }
 
     free(cyphertext);
-    free(nonce);
+    Secure_FreeNonce(nonce);
 
     return out;
 }
@@ -252,7 +216,5 @@ void Secure_Close(Secure_Session *session)
 {
     Net_Close(session->sock);
 
-    free(session->key);
-
-    free(session->nonce);
+    Secure_FreeSession(session);
 }
