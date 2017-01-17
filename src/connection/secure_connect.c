@@ -13,13 +13,27 @@ int Secure_ConnectSocket(Secure_Session *session, Net_Addr addr, Net_Port port)
     return 0;
 }
 
-int Secure_SendPublicKey(Secure_Session *session, Secure_PubKey pub)
+int Secure_SendPublicKey(Secure_Session *session, Secure_PrivKey peer,
+    Secure_PubKey pub, Secure_PrivKey priv)
 {
-    if(Net_Send(session->sock, pub, SECURE_PUBKEY_SIZE) != SECURE_PUBKEY_SIZE)
+    size_t ciphersize = SECURE_PUBKEY_SIZE + crypto_box_SEALBYTES;
+    uint8_t *cipher = (uint8_t*)malloc(ciphersize);
+
+    if(crypto_box_seal(cipher, pub, SECURE_PUBKEY_SIZE, peer))
     {
-        Error_Print("Unable to send public key.\n");
+        Error_Print("Unable to encrypt public key.\n");
+        free(cipher);
         return -1;
     }
+
+    if(Net_Send(session->sock, cipher, ciphersize) != ciphersize)
+    {
+        Error_Print("Unable to send public key.\n");
+        free(cipher);
+        return -1;
+    }
+
+    free(cipher);
 
     return 0;
 }

@@ -25,7 +25,7 @@ Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_Pri
         return NULL;
     }
 
-    if(Secure_SendPublicKey(out, pub))
+    if(Secure_SendPublicKey(out, peer, pub, priv))
     {
         Secure_Close(out);
         return NULL;
@@ -52,7 +52,7 @@ Secure_Session *Secure_Accept(Secure_Server server, Secure_PubKey pub,
 
     Secure_AcceptSocket(out, server);
 
-    if(Secure_RecvPublicKey(out, peer))
+    if(Secure_RecvPublicKey(out, peer, pub, priv))
     {
         Secure_Close(out);
         return NULL;

@@ -1,4 +1,5 @@
 #include "secure_types.h"
+#include <string.h>
 
 int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv)
 {
@@ -33,7 +34,9 @@ int Secure_GenNonce(Secure_Nonce nonce)
 
 Secure_Session *Secure_NewSession()
 {
-    return (Secure_Session*)malloc(sizeof(Secure_Session));
+    Secure_Session *out = (Secure_Session*)malloc(sizeof(Secure_Session));
+    memset(out, 0, sizeof(Secure_Session));
+    return out;
 }
 
 
