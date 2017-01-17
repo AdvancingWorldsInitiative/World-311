@@ -6,13 +6,15 @@ int main(int argc, char *argv[])
 {
     const char *message = "The test passed.";
     int i;
-    Secure_PubKey pub;
-    Secure_PrivKey priv;
-    Secure_PubKey peerpub;
-    Secure_PubKey peerpriv;
+    Secure_PubKey pub = Secure_NewPubKey();
+    Secure_PrivKey priv = Secure_NewPrivKey();
+    Secure_PubKey peerpub = Secure_NewPubKey();
+    Secure_PubKey peerpriv = Secure_NewPrivKey();
+
     Secure_Session *session;
     Secure_Session *peerses;
-    Net_Sock listen;
+
+    Secure_Server listen;
     uint8_t *plain;
 
     Secure_GenKeys(&pub, &priv);
@@ -27,8 +29,7 @@ int main(int argc, char *argv[])
         Error_Print("%.2x", priv[i]);
     Error_Print("\n");
 
-    listen = Net_NewSock(NET_TCP);
-    Net_StartServer(listen, 5558, NET_TCP);
+    listen = Secure_StartServer(5558);
 
     session = Secure_Connect(peerpub, pub, priv, in6addr_loopback, 5558);
 
@@ -46,6 +47,11 @@ int main(int argc, char *argv[])
 
     Secure_Close(session);
     Secure_Close(peerses);
+
+    Secure_FreePubKey(pub);
+    Secure_FreePrivKey(priv);
+    Secure_FreePubKey(peerpub);
+    Secure_FreePrivKey(peerpriv);
 
     return 0;
 }

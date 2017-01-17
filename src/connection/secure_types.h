@@ -30,6 +30,8 @@ typedef union
     uint8_t bytes[4];
 } Secure_MsgSize;
 
+typedef Net_Sock Secure_Server;
+
 typedef struct
 {
     Net_Sock sock;

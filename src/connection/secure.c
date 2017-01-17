@@ -34,18 +34,27 @@ Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_Pri
     return out;
 }
 
-Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey priv)
+Secure_Server Secure_StartServer(Net_Port port)
+{
+    Secure_Server out = Net_NewSock(NET_TCP);
+
+    Net_StartServer(out, port, NET_TCP);
+
+    return out;
+}
+
+Secure_Session *Secure_Accept(Secure_Server server, Secure_PubKey pub,
+    Secure_PrivKey priv)
 {
     Secure_Session *out = Secure_NewSession();
 
     Secure_PubKey peer = Secure_NewPubKey();
 
-    out->sock = Net_Accept(sock);
+    Secure_AcceptSocket(out, server);
 
-    if(Net_Recv(out->sock, peer, SECURE_PUBKEY_SIZE) != SECURE_PUBKEY_SIZE)
+    if(Secure_RecvPublicKey(out, peer))
     {
         Secure_Close(out);
-        Error_Print("Received key is the wrong size.\n");
         return NULL;
     }
 
@@ -56,6 +65,8 @@ Secure_Session *Secure_Accept(Net_Sock sock, Secure_PubKey pub, Secure_PrivKey p
         Secure_Close(out);
         return NULL;
     }
+
+    Secure_FreePubKey(peer);
 
     return out;
 }

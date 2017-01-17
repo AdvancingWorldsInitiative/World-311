@@ -4,12 +4,6 @@ int Secure_ConnectSocket(Secure_Session *session, Net_Addr addr, Net_Port port)
 {
     session->sock = Net_NewSock(NET_TCP);
 
-    if(session->sock == -1)
-    {
-        Error_Print("Unable to open session socket.\n");
-        return -1;
-    }
-
     if(Net_Connect(session->sock, addr, port))
     {
         Error_Print("Unable to connect session socket.\n");
