@@ -1,5 +1,8 @@
 #include "secure_makenonce.h"
 
+#include <string.h>
+#include <stdint.h>
+
 #include "network.h"
 
 Secure_Nonce Secure_SendNoncePart(Secure_Session *session)
@@ -38,4 +41,24 @@ Secure_Nonce Secure_RecvNoncePart(Secure_Session *session)
 
 Secure_Nonce Secure_MakeNonce(Secure_Nonce firstpart, Secure_Nonce secondpart)
 {
+    Secure_Nonce out = Secure_NewNonce();
+
+    uint8_t *together = (uint8_t*)malloc(SECURE_NONCE_SIZE * 2);
+
+    memcpy(together, firstpart, SECURE_NONCE_SIZE);
+
+    memcpy(together + SECURE_NONCE_SIZE, secondpart, SECURE_NONCE_SIZE);
+
+    if(crypto_generichash(out, SECURE_NONCE_SIZE, together, SECURE_NONCE_SIZE * 2,
+        NULL, 0))
+    {
+        Error_Print("Unable to hash nonce.\n");
+        Secure_FreeNonce(out);
+        free(together);
+        return NULL;
+    }
+
+    free(together);
+
+    return out;
 }
