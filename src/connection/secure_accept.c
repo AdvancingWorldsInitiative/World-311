@@ -1,8 +1,39 @@
 #include "secure_accept.h"
 
+#include "secure_makenonce.h"
+
 int Secure_AcceptSocket(Secure_Session *session, Secure_Server server)
 {
    return session->sock = Net_Accept(server);
+}
+
+int Secure_AcceptMakeNonce(Secure_Session *session)
+{
+    Secure_Nonce firstpart, secondpart;
+
+    firstpart = Secure_RecvNoncePart(session);
+
+    if(firstpart == NULL)
+        return -1;
+
+    secondpart = Secure_SendNoncePart(session);
+
+    if(secondpart == NULL)
+    {
+        Secure_FreeNonce(firstpart);
+        return -1;
+    }
+
+    session->nonce = Secure_MakeNonce(firstpart, secondpart);
+
+    if(session->nonce == NULL)
+    {
+        Secure_FreeNonce(firstpart);
+        Secure_FreeNonce(secondpart);
+        return -1;
+    }
+
+    return 0;
 }
 
 int Secure_RecvPublicKey(Secure_Session *session, Secure_PubKey peer,
