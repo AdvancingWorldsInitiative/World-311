@@ -1,12 +1,9 @@
 #include "secure_types.h"
 #include <string.h>
 
-int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv)
+int Secure_GenKeys(Secure_PubKey pub, Secure_PrivKey priv)
 {
-    *pub = Secure_NewPubKey();
-    *priv = Secure_NewPrivKey();
-
-    if(crypto_box_keypair(*pub, *priv))
+    if(crypto_box_keypair(pub, priv))
     {
         Error_Print("Unable to generate keypair.\n");
         return -1;

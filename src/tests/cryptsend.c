@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
     Secure_Server listen;
     uint8_t *plain;
 
-    Secure_GenKeys(&pub, &priv);
-    Secure_GenKeys(&peerpub, &peerpriv);
+    Secure_GenKeys(pub, priv);
+    Secure_GenKeys(peerpub, peerpriv);
 
     Error_Print("Pubkey:  ");
     for(i = 0; i < SECURE_PUBKEY_SIZE; i++)

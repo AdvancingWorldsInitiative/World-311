@@ -43,7 +43,7 @@ typedef struct
     Secure_Nonce nonce;
 } Secure_Session;
 
-extern int Secure_GenKeys(Secure_PubKey *pub, Secure_PrivKey *priv);
+extern int Secure_GenKeys(Secure_PubKey pub, Secure_PrivKey priv);
 extern int Secure_GenSharedKey(Secure_SharedKey sharedkey, Secure_PubKey peer,
     Secure_PrivKey priv);
 extern int Secure_GenNonce(Secure_Nonce nonce);

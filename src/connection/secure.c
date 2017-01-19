@@ -13,7 +13,13 @@ Secure_Session *Secure_Connect(Secure_PubKey peer, Secure_PubKey pub, Secure_Pri
 
     if(Secure_ConnectSocket(out, addr, port))
     {
-        free(out);
+        Secure_FreeSession(out);
+        return NULL;
+    }
+
+    if(Secure_ConnectMakeNonce(out))
+    {
+        Secure_Close(out);
         return NULL;
     }
 
@@ -50,7 +56,17 @@ Secure_Session *Secure_Accept(Secure_Server server, Secure_PubKey pub,
 
     Secure_PubKey peer = Secure_NewPubKey();
 
-    Secure_AcceptSocket(out, server);
+    if(Secure_AcceptSocket(out, server))
+    {
+        Secure_FreeSession(out);
+        return NULL;
+    }
+
+    if(Secure_AcceptMakeNonce(out))
+    {
+        Secure_Close(out);
+        return NULL;
+    }
 
     if(Secure_RecvPublicKey(out, peer, pub, priv))
     {
@@ -69,11 +85,6 @@ Secure_Session *Secure_Accept(Secure_Server server, Secure_PubKey pub,
     Secure_FreePubKey(peer);
 
     return out;
-}
-
-Secure_PlainText Secure_Decrypt(Secure_Session *session,
-    const Secure_CipherText ciphertext, size_t len)
-{
 }
 
 int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)

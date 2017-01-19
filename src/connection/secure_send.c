@@ -36,7 +36,7 @@ int Secure_SendSize(Secure_Session *session, size_t len)
 
     size.value = htonl(len);
 
-    ciphersize = Secure_Encrypt(session, size.bytes, len);
+    ciphersize = Secure_Encrypt(session, size.bytes, sizeof(Secure_MsgSize));
 
     if(ciphersize == NULL)
         return -1;
