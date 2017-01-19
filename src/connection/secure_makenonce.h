@@ -8,4 +8,6 @@ extern Secure_Nonce Secure_RecvNoncePart(Secure_Session *session);
 
 extern Secure_Nonce Secure_MakeNonce(Secure_Nonce firstpart, Secure_Nonce secondpart);
 
+extern int Secure_ProgressNonce(Secure_Nonce nonce);
+
 #endif

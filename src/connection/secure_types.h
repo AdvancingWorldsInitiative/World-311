@@ -23,6 +23,10 @@ typedef uint8_t* Secure_SharedKey;
 #define SECURE_NONCE_SIZE crypto_box_NONCEBYTES
 typedef uint8_t* Secure_Nonce;
 
+#define SECURE_CIPHER_OVERHEAD crypto_box_MACBYTES
+typedef uint8_t* Secure_PlainText;
+typedef uint8_t* Secure_CipherText;
+
 #define SECURE_MAX_MSGSIZE 1048576 /* 1 Meg */
 typedef union
 {
@@ -49,11 +53,15 @@ extern Secure_PubKey Secure_NewPubKey();
 extern Secure_PrivKey Secure_NewPrivKey();
 extern Secure_SharedKey Secure_NewSharedKey();
 extern Secure_Nonce Secure_NewNonce();
+extern Secure_PlainText Secure_NewPlainText(size_t len);
+extern Secure_CipherText Secure_NewCipherText(size_t plaintextsize);
 
 extern void Secure_FreeSession(Secure_Session *session);
 extern void Secure_FreePubKey(Secure_PubKey pub);
 extern void Secure_FreePrivKey(Secure_PrivKey priv);
 extern void Secure_FreeKeyPair(Secure_PubKey pub, Secure_PrivKey priv);
 extern void Secure_FreeNonce(Secure_Nonce nonce);
+extern void Secure_FreePlainText(Secure_PlainText plaintext);
+extern void Secure_FreeCipherText(Secure_CipherText ciphertext);
 
 #endif

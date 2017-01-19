@@ -49,7 +49,6 @@ Secure_PrivKey Secure_NewPrivKey()
 {
     return (Secure_PrivKey)malloc(SECURE_PRIVKEY_SIZE);
 }
-
 Secure_SharedKey Secure_NewSharedKey()
 {
     return (Secure_SharedKey)malloc(SECURE_SHAREDKEY_SIZE);
@@ -58,6 +57,16 @@ Secure_SharedKey Secure_NewSharedKey()
 Secure_Nonce Secure_NewNonce()
 {
     return (Secure_Nonce)malloc(SECURE_NONCE_SIZE);
+}
+
+Secure_PlainText Secure_NewPlainText(size_t len)
+{
+    return (Secure_PlainText)malloc(len);
+}
+
+Secure_CipherText Secure_NewCipherText(size_t plaintextsize)
+{
+    return (uint8_t*)malloc(plaintextsize + SECURE_CIPHER_OVERHEAD);
 }
 
 void Secure_FreeSession(Secure_Session *session)
@@ -88,4 +97,14 @@ void Secure_FreeKeyPair(Secure_PubKey pub, Secure_PrivKey priv)
 void Secure_FreeNonce(Secure_Nonce nonce)
 {
     free(nonce);
+}
+
+void Secure_FreePlainText(Secure_PlainText plaintext)
+{
+    free(plaintext);
+}
+
+void Secure_FreeCipherText(Secure_CipherText ciphertext)
+{
+    free(ciphertext);
 }

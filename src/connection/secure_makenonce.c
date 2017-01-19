@@ -62,3 +62,14 @@ Secure_Nonce Secure_MakeNonce(Secure_Nonce firstpart, Secure_Nonce secondpart)
 
     return out;
 }
+
+int Secure_ProgressNonce(Secure_Nonce nonce)
+{
+    if(crypto_generichash(nonce, SECURE_NONCE_SIZE, nonce, SECURE_NONCE_SIZE, NULL, 0))
+    {
+        Error_Print("Unable to progress nonce.\n");
+        return -1;
+    }
+
+    return 0;
+}

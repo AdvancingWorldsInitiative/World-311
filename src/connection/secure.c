@@ -71,75 +71,20 @@ Secure_Session *Secure_Accept(Secure_Server server, Secure_PubKey pub,
     return out;
 }
 
+Secure_PlainText Secure_Decrypt(Secure_Session *session,
+    const Secure_CipherText ciphertext, size_t len)
+{
+}
+
 int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
 {
-    int sent;
-
-    Secure_MsgSize size;
-    uint8_t *cyphertext = (uint8_t*)malloc(len + crypto_box_MACBYTES);
-    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_MsgSize) + crypto_box_MACBYTES);
-    Secure_Nonce nonce = Secure_NewNonce();
-
-    Secure_GenNonce(nonce);
-
-    if(len > SECURE_MAX_MSGSIZE)
-    {
-        free(cyphertext);
-        free(cyphersize);
-        free(nonce);
+    if(Secure_TestSendSize(len))
         return -1;
-    }
 
-    size.value = htonl(len);
-
-    if(crypto_box_easy_afternm(cyphersize, size.bytes, sizeof(Secure_MsgSize),
-        nonce, session->key))
-    {
-        free(cyphertext);
-        free(cyphersize);
-        free(nonce);
-        Error_Print("Unable to encrypt message size.\n");
+    if(Secure_SendSize(session, len))
         return -1;
-    }
 
-    nonce[0] ^= 1;
-
-    if(crypto_box_easy_afternm(cyphertext, data, len, nonce, session->key))
-    {
-        free(cyphertext);
-        free(cyphersize);
-        free(nonce);
-        Error_Print("Unable to encrypt message.\n");
-        return -1;
-    }
-
-    nonce[0] ^= 1;
-
-    if(Net_Send(session->sock, nonce, crypto_box_NONCEBYTES)
-        != crypto_box_NONCEBYTES)
-    {
-        free(cyphertext);
-        free(cyphersize);
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    if(Net_Send(session->sock, cyphersize, sizeof(Secure_MsgSize) + crypto_box_MACBYTES)
-        != sizeof(Secure_MsgSize) + crypto_box_MACBYTES)
-    {
-        free(cyphertext);
-        free(cyphersize);
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    sent = Net_Send(session->sock, cyphertext, len + crypto_box_MACBYTES);
-
-    free(cyphertext);
-    free(cyphersize);
-    Secure_FreeNonce(nonce);
-
-    return sent;
+    return Secure_SendMessage(session, data, len);
 }
 
 size_t Secure_Recv(Secure_Session *session, uint8_t **data)
