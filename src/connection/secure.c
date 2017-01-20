@@ -100,83 +100,17 @@ int Secure_Send(Secure_Session *session, const uint8_t *data, size_t len)
 
 size_t Secure_Recv(Secure_Session *session, uint8_t **data)
 {
-    size_t out;
+    size_t len;
 
-    Secure_MsgSize size;
-    uint8_t *cyphertext;
-    uint8_t *cyphersize = (uint8_t*)malloc(sizeof(Secure_MsgSize) + crypto_box_MACBYTES);
-    Secure_Nonce nonce = Secure_NewNonce();
+    len = Secure_RecvSize(session);
 
-    if(Net_Recv(session->sock, nonce, crypto_box_NONCEBYTES)
-        != crypto_box_NONCEBYTES)
-    {
-        free(cyphersize);
-        Secure_FreeNonce(nonce);
+    if(len == -1)
+        return len;
+
+    if(Secure_TestRecvSize(len))
         return -1;
-    }
 
-    if(Net_Recv(session->sock, cyphersize, sizeof(Secure_MsgSize) + crypto_box_MACBYTES)
-        != sizeof(Secure_MsgSize) + crypto_box_MACBYTES)
-    {
-        free(cyphersize);
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    if(crypto_box_open_easy_afternm(size.bytes, cyphersize,
-        sizeof(Secure_MsgSize) + crypto_box_MACBYTES, nonce, session->key))
-    {
-        free(cyphersize);
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    free(cyphersize);
-
-    out = ntohl(size.value);
-
-    if(out > SECURE_MAX_MSGSIZE)
-    {
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    cyphertext = (uint8_t*)malloc(out + crypto_box_MACBYTES);
-
-    if(Net_Recv(session->sock, cyphertext, out + crypto_box_MACBYTES)
-        != out + crypto_box_MACBYTES)
-    {
-        free(cyphertext);
-        Secure_FreeNonce(nonce);
-        return -1;
-    }
-
-    nonce[0] ^= 1;
-
-    *data = (uint8_t*)malloc(out);
-
-    if(*data == NULL)
-    {
-        free(cyphertext);
-        Secure_FreeNonce(nonce);
-        Error_Print("Unable to allocate incoming message buffer.\n");
-        return -1;
-    }
-
-    if(crypto_box_open_easy_afternm(*data, cyphertext,
-        out + crypto_box_MACBYTES, nonce, session->key))
-    {
-        free(cyphertext);
-        Secure_FreeNonce(nonce);
-        free(*data);
-        *data = NULL;
-        return -1;
-    }
-
-    free(cyphertext);
-    Secure_FreeNonce(nonce);
-
-    return out;
+    return Secure_RecvMessage(session, data, len);
 }
 
 void Secure_Close(Secure_Session *session)

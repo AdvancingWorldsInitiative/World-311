@@ -53,9 +53,9 @@ int Secure_SendSize(Secure_Session *session, size_t len)
     return 0;
 }
 
-int Secure_SendMessage(Secure_Session *session, const uint8_t *data, size_t len)
+size_t Secure_SendMessage(Secure_Session *session, const uint8_t *data, size_t len)
 {
-    int sent;
+    size_t sent;
 
     Secure_CipherText ciphertext;
 
@@ -64,7 +64,7 @@ int Secure_SendMessage(Secure_Session *session, const uint8_t *data, size_t len)
     if(ciphertext == NULL)
         return -1;
 
-    sent = Net_Send(session->sock, ciphertext, len + crypto_box_MACBYTES);
+    sent = Net_Send(session->sock, ciphertext, len + SECURE_CIPHER_OVERHEAD);
 
     Secure_FreeCipherText(ciphertext);
 

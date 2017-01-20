@@ -27,6 +27,8 @@ int Secure_GenSharedKey(Secure_SharedKey sharedkey, Secure_PubKey peer,
 int Secure_GenNonce(Secure_Nonce nonce)
 {
     randombytes_buf(nonce, SECURE_NONCE_SIZE);
+
+    return 0;
 }
 
 Secure_Session *Secure_NewSession()
