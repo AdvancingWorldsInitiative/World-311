@@ -4,7 +4,12 @@
 
 int Secure_AcceptSocket(Secure_Session *session, Secure_Server server)
 {
-   return session->sock = Net_Accept(server);
+    session->sock = Net_Accept(server);
+
+    if(session->sock == -1)
+        return -1;
+
+    return 0;
 }
 
 int Secure_AcceptMakeNonce(Secure_Session *session)
