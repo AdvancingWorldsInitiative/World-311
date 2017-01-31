@@ -1,1 +1,1 @@
-Secure connections are vulnerable to a replay attack.
+No known vulnerabilities at the moment.
