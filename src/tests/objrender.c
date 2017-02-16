@@ -2,8 +2,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "../interface/draw.h"
-#include "../utilities/vfile.h"
-#include "../utilities/error.h"
+#include "../common/vfile.h"
+#include "../common/error.h"
 
 GLuint LoadTexture(const char *path);
 
